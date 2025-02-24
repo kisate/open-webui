@@ -258,6 +258,12 @@ async def generate_function_chat_completion(
     pipe = function_module.pipe
     params = get_function_params(function_module, form_data, user, extra_params)
 
+    if "metadata" in form_data:
+        form_data.update(metadata)
+    else:
+        form_data["metadata"] = metadata
+    print(metadata)
+
     if form_data.get("stream", False):
 
         async def stream_content():
