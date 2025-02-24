@@ -635,10 +635,11 @@ async def generate_chat_completion(
     if "max_tokens" in payload and "max_completion_tokens" in payload:
         del payload["max_tokens"]
 
-    if payload.get("metadata", None):
-        payload["metadata"].update(extra_metadata)
-    else:
-        payload["metadata"] = extra_metadata
+    if extra_metadata:
+        if payload.get("metadata", None):
+            payload["metadata"].update(extra_metadata)
+        else:
+            payload["metadata"] = extra_metadata
 
     # Convert the modified body back to JSON
     payload = json.dumps(payload)

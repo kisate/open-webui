@@ -78,11 +78,12 @@ async def generate_direct_chat_completion(
     event_caller = get_event_call(metadata)
 
     channel = f"{user_id}:{session_id}:{request_id}"
-
-    if form_data.get("metadata", None):
-        form_data["metadata"].update(extra_metadata)
-    else:
-        form_data["metadata"] = extra_metadata
+    
+    if extra_metadata:
+        if form_data.get("metadata", None):
+            form_data["metadata"].update(extra_metadata)
+        else:
+            form_data["metadata"] = extra_metadata
 
     if form_data.get("stream"):
         q = asyncio.Queue()
