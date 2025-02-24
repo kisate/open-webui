@@ -69,6 +69,7 @@ async def generate_direct_chat_completion(
     print("generate_direct_chat_completion")
 
     metadata = form_data.pop("metadata", {})
+    extra_metadata = form_data.pop("extra_metadata", {})
 
     user_id = metadata.get("user_id")
     session_id = metadata.get("session_id")
@@ -77,6 +78,8 @@ async def generate_direct_chat_completion(
     event_caller = get_event_call(metadata)
 
     channel = f"{user_id}:{session_id}:{request_id}"
+
+    form_data["metadata"] = extra_metadata
 
     if form_data.get("stream"):
         q = asyncio.Queue()
@@ -189,6 +192,8 @@ async def generate_chat_completion(
     # Process the form_data through the pipeline
     try:
         form_data = process_pipeline_inlet_filter(request, form_data, user, models)
+        print("!!!!!!!!!!!!!!")
+        print(form_data)
     except Exception as e:
         raise e
 
