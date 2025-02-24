@@ -259,7 +259,7 @@ async def generate_function_chat_completion(
     pipe = function_module.pipe
     params = get_function_params(function_module, form_data, user, extra_params)
 
-    if "metadata" in form_data:
+    if form_data.get("metadata", None):
         form_data["metadata"].update(extra_metadata)
     else:
         form_data["metadata"] = extra_metadata
