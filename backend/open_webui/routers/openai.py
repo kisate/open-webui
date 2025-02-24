@@ -554,6 +554,7 @@ async def generate_chat_completion(
 
     payload = {**form_data}
     metadata = payload.pop("metadata", None)
+    extra_metadata = payload.pop("extra_metadata", None)
 
     model_id = form_data.get("model")
     model_info = Models.get_model_by_id(model_id)
@@ -633,6 +634,11 @@ async def generate_chat_completion(
 
     if "max_tokens" in payload and "max_completion_tokens" in payload:
         del payload["max_tokens"]
+
+    if "metadata" in payload:
+        payload["metadata"].update(extra_metadata)
+    else:
+        payload["metadata"] = extra_metadata
 
     # Convert the modified body back to JSON
     payload = json.dumps(payload)

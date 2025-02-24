@@ -192,8 +192,6 @@ async def generate_chat_completion(
     # Process the form_data through the pipeline
     try:
         form_data = process_pipeline_inlet_filter(request, form_data, user, models)
-        print("!!!!!!!!!!!!!!")
-        print(form_data)
     except Exception as e:
         raise e
 
