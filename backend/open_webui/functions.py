@@ -198,6 +198,7 @@ async def generate_function_chat_completion(
     model_info = Models.get_model_by_id(model_id)
 
     metadata = form_data.pop("metadata", {})
+    extra_metadata = form_data.pop("extra_metadata", {})
 
     files = metadata.get("files", [])
     tool_ids = metadata.get("tool_ids", [])
@@ -259,10 +260,9 @@ async def generate_function_chat_completion(
     params = get_function_params(function_module, form_data, user, extra_params)
 
     if "metadata" in form_data:
-        form_data.update(metadata)
+        form_data["metadata"].update(extra_metadata)
     else:
-        form_data["metadata"] = metadata
-    print(metadata)
+        form_data["metadata"] = extra_metadata
 
     if form_data.get("stream", False):
 
