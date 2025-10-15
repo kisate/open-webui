@@ -198,6 +198,7 @@ async def generate_function_chat_completion(
     model_info = Models.get_model_by_id(model_id)
 
     metadata = form_data.pop("metadata", {})
+    extra_metadata = form_data.pop("extra_metadata", {})
 
     files = metadata.get("files", [])
     tool_ids = metadata.get("tool_ids", [])
@@ -250,13 +251,19 @@ async def generate_function_chat_completion(
 
         params = model_info.params.model_dump()
         form_data = apply_model_params_to_body_openai(params, form_data)
-        form_data = apply_model_system_prompt_to_body(params, form_data, user)
+        form_data = apply_model_system_prompt_to_body(params, form_data, metadata, user)
 
     pipe_id = get_pipe_id(form_data)
     function_module = get_function_module_by_id(request, pipe_id)
 
     pipe = function_module.pipe
     params = get_function_params(function_module, form_data, user, extra_params)
+
+    if extra_metadata:
+        if form_data.get("metadata", None):
+            form_data["metadata"].update(extra_metadata)
+        else:
+            form_data["metadata"] = extra_metadata
 
     if form_data.get("stream", False):
 

@@ -278,8 +278,9 @@ class PgvectorClient:
                 ids=ids, distances=distances, documents=documents, metadatas=metadatas
             )
         except Exception as e:
+            self.session.rollback()
             print(f"Error during search: {e}")
-            return None
+            raise
 
     def query(
         self, collection_name: str, filter: Dict[str, Any], limit: Optional[int] = None
@@ -311,7 +312,8 @@ class PgvectorClient:
             )
         except Exception as e:
             print(f"Error during query: {e}")
-            return None
+            self.session.rollback()
+            raise
 
     def get(
         self, collection_name: str, limit: Optional[int] = None
@@ -335,7 +337,8 @@ class PgvectorClient:
             return GetResult(ids=ids, documents=documents, metadatas=metadatas)
         except Exception as e:
             print(f"Error during get: {e}")
-            return None
+            self.session.rollback()
+            raise
 
     def delete(
         self,
@@ -388,7 +391,8 @@ class PgvectorClient:
             return exists
         except Exception as e:
             print(f"Error checking collection existence: {e}")
-            return False
+            self.session.rollback()
+            raise
 
     def delete_collection(self, collection_name: str) -> None:
         self.delete(collection_name)

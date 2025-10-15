@@ -75,9 +75,9 @@ async def cleanup_response(
         await session.close()
 
 
-def openai_o1_handler(payload):
+def openai_o1_o3_handler(payload):
     """
-    Handle O1 specific parameters
+    Handle o1, o3 specific parameters
     """
     if "max_tokens" in payload:
         # Remove "max_tokens" from the payload
@@ -554,6 +554,7 @@ async def generate_chat_completion(
 
     payload = {**form_data}
     metadata = payload.pop("metadata", None)
+    extra_metadata = payload.pop("extra_metadata", None)
 
     model_id = form_data.get("model")
     model_info = Models.get_model_by_id(model_id)
@@ -566,7 +567,7 @@ async def generate_chat_completion(
 
         params = model_info.params.model_dump()
         payload = apply_model_params_to_body_openai(params, payload)
-        payload = apply_model_system_prompt_to_body(params, payload, metadata)
+        payload = apply_model_system_prompt_to_body(params, payload, metadata, user)
 
         # Check if user has access to the model
         if not bypass_filter and user.role == "user":
@@ -621,10 +622,10 @@ async def generate_chat_completion(
     url = request.app.state.config.OPENAI_API_BASE_URLS[idx]
     key = request.app.state.config.OPENAI_API_KEYS[idx]
 
-    # Fix: O1 does not support the "max_tokens" parameter, Modify "max_tokens" to "max_completion_tokens"
-    is_o1 = payload["model"].lower().startswith("o1-")
-    if is_o1:
-        payload = openai_o1_handler(payload)
+    # Fix: o1,o3 does not support the "max_tokens" parameter, Modify "max_tokens" to "max_completion_tokens"
+    is_o1_o3 = payload["model"].lower().startswith(("o1", "o3-"))
+    if is_o1_o3:
+        payload = openai_o1_o3_handler(payload)
     elif "api.openai.com" not in url:
         # Remove "max_completion_tokens" from the payload for backward compatibility
         if "max_completion_tokens" in payload:
@@ -633,6 +634,12 @@ async def generate_chat_completion(
 
     if "max_tokens" in payload and "max_completion_tokens" in payload:
         del payload["max_tokens"]
+
+    if extra_metadata:
+        if payload.get("metadata", None):
+            payload["metadata"].update(extra_metadata)
+        else:
+            payload["metadata"] = extra_metadata
 
     # Convert the modified body back to JSON
     payload = json.dumps(payload)
