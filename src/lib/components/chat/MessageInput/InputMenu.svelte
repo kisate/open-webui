@@ -197,8 +197,7 @@
 								? $i18n.t('You do not have permission to upload files.')
 								: ''}
 						className="w-full"
-					>
-				</Tooltip>
+					></Tooltip>
 
 					{#if $config?.features?.enable_notes ?? false}
 						<Tooltip
