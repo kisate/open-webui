@@ -553,78 +553,48 @@
 
 		files = [...files, fileItem];
 
-		if (!$temporaryChatEnabled) {
-			try {
-				// If the file is an audio file, provide the language for STT.
-				let metadata = null;
-				if (
-					(file.type.startsWith('audio/') || file.type.startsWith('video/')) &&
-					$settings?.audio?.stt?.language
-				) {
-					metadata = {
-						language: $settings?.audio?.stt?.language
-					};
-				}
+    try {
+      // If the file is an audio file, provide the language for STT.
+      let metadata = null;
+      if (
+        (file.type.startsWith('audio/') || file.type.startsWith('video/')) &&
+          $settings?.audio?.stt?.language
+      ) {
+        metadata = {
+          language: $settings?.audio?.stt?.language
+        };
+      }
 
-				// During the file upload, file content is automatically extracted.
-				const uploadedFile = await uploadFile(localStorage.token, file, metadata);
+      // During the file upload, file content is automatically extracted.
+      const uploadedFile = await uploadFile(localStorage.token, file, metadata);
 
-				if (uploadedFile) {
-					console.log('File upload completed:', {
-						id: uploadedFile.id,
-						name: fileItem.name,
-						collection: uploadedFile?.meta?.collection_name
-					});
+      if (uploadedFile) {
+        console.log('File upload completed:', {
+          id: uploadedFile.id,
+          name: fileItem.name,
+          collection: uploadedFile?.meta?.collection_name
+        });
 
-					if (uploadedFile.error) {
-						console.warn('File upload warning:', uploadedFile.error);
-						toast.warning(uploadedFile.error);
-					}
+        if (uploadedFile.error) {
+          console.warn('File upload warning:', uploadedFile.error);
+          toast.warning(uploadedFile.error);
+        }
 
-					fileItem.status = 'uploaded';
-					fileItem.file = uploadedFile;
-					fileItem.id = uploadedFile.id;
-					fileItem.collection_name =
-						uploadedFile?.meta?.collection_name || uploadedFile?.collection_name;
-					fileItem.url = `${WEBUI_API_BASE_URL}/files/${uploadedFile.id}`;
+        fileItem.status = 'uploaded';
+        fileItem.file = uploadedFile;
+        fileItem.id = uploadedFile.id;
+        fileItem.collection_name =
+          uploadedFile?.meta?.collection_name || uploadedFile?.collection_name;
+        fileItem.url = `${WEBUI_API_BASE_URL}/files/${uploadedFile.id}`;
 
-					files = files;
-				} else {
-					files = files.filter((item) => item?.itemId !== tempItemId);
-				}
-			} catch (e) {
-				toast.error(`${e}`);
-				files = files.filter((item) => item?.itemId !== tempItemId);
-			}
-		} else {
-			// If temporary chat is enabled, we just add the file to the list without uploading it.
-
-			const content = await extractContentFromFile(file).catch((error) => {
-				toast.error(
-					$i18n.t('Failed to extract content from the file: {{error}}', { error: error })
-				);
-				return null;
-			});
-
-			if (content === null) {
-				toast.error($i18n.t('Failed to extract content from the file.'));
-				files = files.filter((item) => item?.itemId !== tempItemId);
-				return null;
-			} else {
-				console.log('Extracted content from file:', {
-					name: file.name,
-					size: file.size,
-					content: content
-				});
-
-				fileItem.status = 'uploaded';
-				fileItem.type = 'text';
-				fileItem.content = content;
-				fileItem.id = uuidv4(); // Temporary ID for the file
-
-				files = files;
-			}
-		}
+        files = files;
+      } else {
+        files = files.filter((item) => item?.itemId !== tempItemId);
+      }
+    } catch (e) {
+      toast.error(`${e}`);
+      files = files.filter((item) => item?.itemId !== tempItemId);
+    }
 	};
 
 	const inputFilesHandler = async (inputFiles) => {
